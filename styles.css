@@ -1,0 +1,10 @@
+.meeting-notes input:not([type=checkbox]),.meeting-notes textarea{width:100%;box-sizing:border-box;}
+.meeting-notes textarea{min-height:170px;resize:vertical;margin:8px 0 16px;}
+.meeting-notes label{display:block;margin-top:12px;}
+.meeting-notes p{color:var(--text-muted);overflow-wrap:anywhere;}
+.meeting-notes button{margin:8px 0;min-height:40px;}
+@media(max-width:600px){.meeting-notes textarea{min-height:140px;font-size:16px;}}
+
+.meeting-notes details{margin:16px 0;}
+.meeting-notes summary{cursor:pointer;color:var(--text-muted);}
+.meeting-notes [hidden]{display:none!important;}

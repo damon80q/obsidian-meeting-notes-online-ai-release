@@ -1,0 +1,15 @@
+{
+  "variant": "online",
+  "sourceVersion": "0.1.4",
+  "sourceCommit": "aa834de204d414c29a4e7582aa9de31e93aef28b",
+  "preparedOn": "2026-10-14",
+  "status": "draft-not-publicly-released",
+  "transformations": [
+    "배포용 표시명·플러그인 ID·패키지 이름·기본 노트 폴더 분리",
+    "개인 서버 주소·경로·운영 이력 제외",
+    "일반 사용자 설치·설정 안내",
+    "서버 ZIP 허용 목록·해시 생성"
+  ],
+  "processingLogicChanges": false,
+  "deploymentNamesChanged": true
+}

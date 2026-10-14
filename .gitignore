@@ -1,0 +1,36 @@
+node_modules/
+main.js
+.env
+.env.*
+!.env.example
+*.log
+dist/
+.venv/
+__pycache__/
+*.pyc
+auth.json
+*.wav
+*.webm
+*.m4a
+!.env.openai.example
+!.env.anthropic.example
+
+# 서버 운영 비밀·런타임·백업은 배포 코드에 포함하지 않습니다.
+*.env
+secrets/
+*.sqlite*
+.openclaw/
+Backups/
+
+# 사용자 환경·실측 receipt는 배포 코드에서 제외합니다.
+auth.json
+*.wav
+*.webm
+*.m4a
+*.mp3
+*.ogg
+data.json
+*.sqlite*
+secrets/
+.openclaw/
+docs/*SMOKE*.json

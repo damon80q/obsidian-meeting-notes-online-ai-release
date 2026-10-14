@@ -1,0 +1,10 @@
+# 검증 환경: Linux / Python 3.12 / CPU·int8. 시스템 Python 대신 프로젝트 .venv에 설치합니다.
+faster-whisper==1.1.1
+# faster-whisper가 내부에서 쓰지만 설치 정보에 빠진 패키지입니다.
+# 직접 선언하여 ModuleNotFoundError: No module named 'requests'를 방지합니다.
+requests>=2.32.5,<3
+# PyAV 19는 faster-whisper 1.1.1이 사용하는 metadata_errors 옵션을 제거했습니다.
+# 실제 디코딩·무음 전사 요청을 통과한 호환 버전으로 고정합니다.
+av==18.1.0
+# Whisper도 프로젝트 .env에서 모델·용어 설정을 읽습니다. 별도 인증 구현은 하지 않습니다.
+python-dotenv>=1.0,<2

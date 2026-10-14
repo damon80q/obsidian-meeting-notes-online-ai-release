@@ -1,0 +1,20 @@
+{
+  "name": "obsidian-meeting-notes-online-ai-release",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "server": "node --env-file=.env server/index.mjs",
+    "package": "node package.mjs",
+    "smoke:codex": "node --env-file=.env scripts/codex-smoke.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.10",
+    "esbuild": "0.25.0",
+    "jsdom": "26.0.0",
+    "obsidian": "1.8.7",
+    "typescript": "5.7.3"
+  }
+}
