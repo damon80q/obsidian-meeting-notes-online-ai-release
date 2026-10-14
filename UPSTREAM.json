@@ -1,14 +1,17 @@
 {
   "variant": "online",
-  "sourceVersion": "0.1.4",
-  "sourceCommit": "aa834de204d414c29a4e7582aa9de31e93aef28b",
+  "sourceVersion": "0.1.6",
+  "sourceCommit": "7a0a173c8223ef6445d5709ef779819fa9e5c8aa",
   "preparedOn": "2026-10-14",
-  "status": "draft-not-publicly-released",
+  "status": "release-approved",
   "transformations": [
     "배포용 표시명·플러그인 ID·패키지 이름·기본 노트 폴더 분리",
     "개인 서버 주소·경로·운영 이력 제외",
     "일반 사용자 설치·설정 안내",
-    "서버 ZIP 허용 목록·해시 생성"
+    "서버 ZIP 허용 목록·해시 생성",
+    "작성자명 일반화",
+    "녹음 종료 후 처리 스피너·단계 표시 반영",
+    "기본 저장 폴더 회의록-온라인AI 통일·이전 기본값만 전환"
   ],
   "processingLogicChanges": false,
   "deploymentNamesChanged": true

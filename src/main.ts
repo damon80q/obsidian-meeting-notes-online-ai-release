@@ -1,6 +1,7 @@
 import {App,Modal,Notice,Plugin,PluginSettingTab,Setting,requestUrl,normalizePath,Platform} from 'obsidian';
 import {folderPath,fileStem,renderDraft,meetingTitle,validateEndpoint} from './core';
 import {RecordingControls} from './recording';
+import {ProcessingIndicator} from './progress';
 
 interface Settings {
  endpoint:string;
@@ -12,12 +13,18 @@ interface Settings {
 
 // 처음에는 서버 없이 저장 흐름을 시험하는 데모입니다.
 // 127.0.0.1은 옵시디언 기기 자체입니다. 다른 서버를 쓰는 맥에서는 HTTPS로 바꿉니다.
-const defaults:Settings={endpoint:'http://127.0.0.1:8789',token:'',folder:'회의록-AI-온라인',autoSave:true,mode:'demo'};
+const defaults:Settings={endpoint:'http://127.0.0.1:8789',token:'',folder:'회의록-온라인AI',autoSave:true,mode:'demo'};
 
 export default class MeetingPlugin extends Plugin {
  settings:Settings=defaults;
  async onload(){
-  this.settings={...defaults,...await this.loadData()};
+  const saved=await this.loadData();
+  this.settings={...defaults,...saved};
+  // 이전 기본값만 전환합니다. 기존 노트는 이동하지 않고 사용자 지정 경로는 보존합니다.
+  if(['회의록-상용','회의록-AI-온라인'].includes(saved?.folder)){
+   this.settings.folder=defaults.folder;
+   await this.saveSettings();
+  }
   this.addSettingTab(new MeetingSettings(this.app,this));
   this.addRibbonIcon('notebook-pen','AI 회의록 · 온라인 AI',()=>new MeetingModal(this.app,this).open());
   this.addCommand({id:'create-meeting-note',name:'회의 정리 시작',callback:()=>new MeetingModal(this.app,this).open()});
@@ -81,6 +88,7 @@ class MeetingModal extends Modal {
   const checkbox=consent.createEl('input',{type:'checkbox'});
   consent.appendText(' 표시된 음성·텍스트 처리 대상으로 회의 자료를 보내는 데 동의합니다.');
   const status=el.createEl('p',{attr:{role:'status','aria-live':'polite'}});
+  const progress=new ProcessingIndicator(el);
 
   // 녹음을 기본 동작으로 배치합니다. 텍스트 직접 입력·제목 변경은 선택 기능입니다.
   const audioEl=mode==='server'?el.createDiv():null;
@@ -118,6 +126,8 @@ class MeetingModal extends Modal {
    if(this.busy||!draft.value.trim())return;
    this.busy=true;
    save.disabled=true;
+   generate.disabled=true;
+   progress.show('회의록을 저장하는 중…');
    try{
     const folder=folderPath(this.plugin.settings.folder);
     const parts=folder?folder.split('/'):[];
@@ -142,7 +152,7 @@ class MeetingModal extends Modal {
     status.setText(e instanceof Error?e.message:'저장에 실패했습니다.');
     editor.hidden=false;
     save.disabled=false;
-   }finally{this.busy=false;}
+   }finally{this.busy=false;generate.disabled=false;progress.hide();}
   };
 
   const analyzeText=async(fromAudio:boolean)=>{
@@ -158,6 +168,7 @@ class MeetingModal extends Modal {
    editor.hidden=true;
    const seq=++this.generation;
    status.setText('회의 내용을 정리하는 중…');
+   progress.show('회의록을 정리하는 중…');
    try{
     let result;
     let resultMode='demo';
@@ -191,6 +202,7 @@ class MeetingModal extends Modal {
     this.busy=false;
     generate.disabled=false;
     if(completed&&fromAudio&&this.plugin.settings.autoSave&&!this.closed)await saveNote();
+    progress.hide();
    }
   };
 
@@ -206,11 +218,12 @@ class MeetingModal extends Modal {
     endpoint,token:this.plugin.settings.token,
     allowed:()=>providerReady&&audioReady&&checkbox.checked&&!this.busy,
     onStart:refreshTitle,
+    progressEl:progress.element,onProgress:message=>{if(!this.closed){progress.show(message);generate.disabled=true;save.disabled=true;}},onIdle:()=>{progress.hide();if(!this.closed)generate.disabled=false;},
     onText:(text,path)=>{
      // 전사문을 분석 입력으로 자동 연결합니다. 사용자가 텍스트 칸에 입력할 필요는 없습니다.
      input.value=text;
      this.audioPath=path;
-     void analyzeText(true);
+     return analyzeText(true);
     }
    });
    disclosure.setText('서버 전송 대상을 확인 중입니다.');

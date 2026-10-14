@@ -8,3 +8,9 @@
 .meeting-notes details{margin:16px 0;}
 .meeting-notes summary{cursor:pointer;color:var(--text-muted);}
 .meeting-notes [hidden]{display:none!important;}
+
+.meeting-notes .meeting-processing{display:flex;align-items:center;gap:12px;padding:14px;margin:12px 0;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);}
+.meeting-notes .meeting-processing p{margin:4px 0 0;}
+.meeting-notes .meeting-spinner{display:inline-block;flex-shrink:0;width:24px;height:24px;box-sizing:border-box;border:3px solid var(--background-modifier-border);border-top-color:var(--interactive-accent);border-radius:50%;animation:meeting-notes-spin .8s linear infinite;}
+@keyframes meeting-notes-spin{to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){.meeting-notes .meeting-spinner{animation:none;}}
