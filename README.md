@@ -2,39 +2,53 @@
 
 옵시디언에서 회의를 녹음하고 마크다운 회의록·전사문·원음을 보관하는 플러그인입니다. 본인이 처리 서버를 운영하거나 담당자가 제공한 서버를 이용합니다. 특정 개인 서버나 별도 에이전트 앱은 필요하지 않습니다.
 
-**v0.1.0 최초 배포판**입니다. 설치 파일은 [Releases](https://github.com/damon80q/obsidian-meeting-notes-online-ai-release/releases)의 Assets에서 받습니다. 저장소가 비공개라면 접근 권한이 있는 GitHub 계정으로 로그인해야 합니다. 옵시디언 커뮤니티 플러그인 목록에 등록된 상태는 아닙니다.
+**v0.1.1 업데이트** — 터보 약30초 구간 전사·미완료 이어받기·전사 취소를 추가했습니다. 설치 파일은 [Releases](https://github.com/damon80q/obsidian-meeting-notes-online-ai-release/releases)의 Assets에서 받습니다. 옵시디언 커뮤니티 플러그인 목록에 등록된 상태는 아닙니다.
 
 ## 먼저 볼 문서 — 하나만
 
-**[전체 설치·설정 안내](docs/SETUP.md)**를 봅니다. 서버 설치 → 모델/토큰 → 연결 주소 → 옵시디언 → 녹음 시험 → 재부팅까지 한곳에 있습니다. 기본 서버 폴더는 `~/apps/obsidian-meeting-notes-online-ai-release`이며 자신의 폴더로 바꿔도 됩니다.
+**[전체 설치·설정 안내](docs/SETUP.md)**를 봅니다. 서버 설치 → 모델/토큰 → 연결 주소 → 옵시디언 → 녹음 시험 → 재부팅·업데이트까지 한곳에 있습니다.
 
-## 어떤 버전인가요?
+## 설치 파일
 
-음성은 본인이 운영하는 Whisper 서버에서, 전사 텍스트 정리는 Codex 로그인 또는 선택한 온라인 AI API에서 처리합니다.
+설치 ID는 **ai-meeting-notes-online**입니다. 기존 공개판 v0.1.0과 같은 ID이고 내부 개발판과는 구분됩니다.
 
-설치 ID는 **ai-meeting-notes-online**, 파일은 **ai-meeting-notes-online-0.1.0.zip**(플러그인)과 **ai-meeting-notes-online-server-0.1.0.zip**(서버)입니다. 내부 개발용 이름/설치 폴더와 구분됩니다. Source code ZIP은 플러그인 설치용 ZIP이 아닙니다.
+- 플러그인: **ai-meeting-notes-online-0.1.1.zip**
+- 서버: **ai-meeting-notes-online-server-0.1.1.zip**
+- 무결성 확인: **SHA256SUMS.txt**
+
+Source code ZIP은 플러그인 설치용 ZIP이 아닙니다. 기존 공개판은 같은 설치 폴더의 `main.js`·`manifest.json`·`styles.css`만 교체하고 `data.json`을 보존합니다. 서버를 제공받는 사용자는 플러그인만 설치하고, 직접 운영하는 담당자는 두 서버 코드도 함께 업데이트합니다. 자세한 순서는 [업데이트 안내](docs/SETUP.md#7-재부팅업데이트)를 확인하세요.
 
 ## 사용
 
-녹음 시작 → 녹음 종료·정리 → 일시 제목으로 회의록 자동 저장·열기입니다. 종료 버튼을 누르면 **로딩 스피너와 녹음 보관 → 전사 → 회의록 정리 → 저장 안내**가 표시됩니다. 완료·오류 시 표시가 해제되며 처리 중 중복 실행을 막습니다. 수동 텍스트/파일 재처리는 선택형으로 접혀 있습니다.
+동의·녹음 소리 선택 → 녹음 시작 → 녹음 중 구간 전사 → 녹음 종료·정리 → 회의록 자동 저장·열기입니다.
 
-회의록은 검토가 필요한 AI 초안입니다. 기존 노트는 덮어쓰지 않습니다. 실패 시 확보한 원음·전사문을 보존합니다. 화자 분리·실시간 전사·장시간 자동 분할·자동 재전송은 지원하지 않습니다.
+- **터보 구간 전사:** 끝부분 무음을 우선해 최대30초씩 처리합니다. 지원 서버에서 기본 선택됩니다.
+- **종료 시 이어받기:** 완료된 구간을 재사용하고 대기 구간·마지막 꼬리만 처리한 뒤 전체 전사문을 정리합니다. 서버가 느리면 종료 후에도 기다릴 수 있습니다.
+- **원음 한 파일:** 전체 녹음을 한 파일로 보관하고, 진행 중 전사문은 한 문서에 누적합니다.
+- **재처리·복구:** 보관 원음 선택, 미완료 구간 계속, 실제 서버 전사 취소를 지원합니다.
+- **녹음 소리 선택:** 데스크톱은 마이크+컴퓨터 소리 또는 마이크만 선택합니다. 컴퓨터 소리는 OS 권한·환경 지원이 필요하고 실제 Zoom/장치 조합은 미검증입니다. 모바일은 마이크만 지원하며 전체 흐름은 미검증입니다.
+
+별도 small 모델을 준비하면 빠른 모드도 쓸 수 있고, 녹음 종료 후 전체 터보 전사도 유지합니다. [전사 방식과 복구](docs/TRANSCRIPTION.md)를 확인하세요.
+
+회의록은 검토가 필요한 AI 초안입니다. 기존 노트는 덮어쓰지 않습니다. 실패 시 확보한 원음·전사문을 보존하며 음성을 자동 재전송하지 않습니다. 화자 분리·즉시 자막·실제 장시간 회의 성능을 보장하지 않습니다.
 
 ## 참고용 — 필요할 때만
 
-- [모델/환경 설정](docs/CONFIGURATION.md) — 모델이나 제공자를 바꿀 때
-- [오류 해결](docs/TROUBLESHOOTING.md) — 문제가 생겼을 때
-- [검증 범위](docs/STATUS.md) — 확인한 것과 미확인 항목
-- [배포판 업데이트](docs/RELEASE_PROCESS.md) — 개발 담당자용
+- [모델/환경 설정](docs/CONFIGURATION.md)
+- [오류 해결](docs/TROUBLESHOOTING.md)
+- [검증 범위](docs/STATUS.md)
+- [변경 기록](CHANGELOG.md)
+- [배포판 업데이트 절차](docs/RELEASE_PROCESS.md) — 개발 담당자용
 
 ## 개발 담당자
 
-~~~sh
+```sh
 npm ci
 npm run typecheck
 npm test
+.venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 npm run build
 npm run package
-~~~
+```
 
-실제 .env·data.json·OAuth·API 키·개인 원음·운영 로그는 배포 코드에 넣지 않습니다.
+Python 검사는 `server/requirements.txt`의 의존성이 준비된 가상환경에서 실행합니다. 실제 `.env`·`data.json`·OAuth·API 키·개인 원음·운영 로그는 배포 코드에 넣지 않습니다.

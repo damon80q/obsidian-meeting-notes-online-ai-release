@@ -1,17 +1,17 @@
 {
   "variant": "online",
-  "sourceVersion": "0.1.6",
-  "sourceCommit": "7a0a173c8223ef6445d5709ef779819fa9e5c8aa",
-  "preparedOn": "2026-10-14",
+  "sourceVersion": "0.1.12",
+  "sourceCommit": "6485900dd902f66eff66a46425415cbc3af4fac5",
+  "releaseVersion": "0.1.1",
+  "preparedOn": "2026-10-15",
   "status": "release-approved",
   "transformations": [
-    "배포용 표시명·플러그인 ID·패키지 이름 분리",
-    "개인 서버 주소·경로·운영 이력 제외",
-    "일반 사용자 설치·설정 안내",
-    "서버 ZIP 허용 목록·해시 생성",
-    "작성자명 일반화",
-    "녹음 종료 후 처리 스피너·단계 표시 반영",
-    "기본 저장 폴더 회의록-온라인AI 통일·이전 기본값만 전환"
+    "배포용 표시명·플러그인 ID·패키지 이름과 회의록-온라인AI 기본 폴더 유지",
+    "개인 서버 주소·경로·운영 이력 제외 및 테스트 주소 일반화",
+    "마이크/컴퓨터 소리·약30초 터보 전사·작업 복구/취소 기능 반영",
+    "기존 접속 주소·토큰·저장 폴더·자동 저장 설정 보존",
+    "일반 사용자 설치·업데이트·검증 범위 문서 개정",
+    "서버 ZIP 허용 목록·새 임시 경로 포장·SHA256 검증"
   ],
   "processingLogicChanges": false,
   "deploymentNamesChanged": true

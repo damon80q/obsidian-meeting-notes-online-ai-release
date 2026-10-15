@@ -20,6 +20,14 @@ OpenAI는 MODE=openai·OPENAI_API_KEY·OPENAI_MODEL, Anthropic은 MODE=anthropic
 
 ## Whisper·네트워크
 
-Whisper는 .env의 WHISPER_MODEL(large-v3-turbo), CPU 스레드·beam·선택형 hotwords/짧은 문맥을 읽습니다. 용어 힌트에 사실 추가나 원문 치환 명령을 넣지 않습니다.
+Whisper는 .env의 WHISPER_MODEL(large-v3-turbo), CPU 스레드·beam·선택형 hotwords/짧은 문맥을 읽습니다. 터보 구간과 종료 후 전체 전사는 같은 정밀 모델/beam을 사용합니다. 기본 CPU 스레드는4이고 서버별 실측 후 조정합니다. 용어 힌트에 사실 추가나 원문 치환 명령을 넣지 않습니다.
 
 LAN_HOST는 선택형 사설 IPv4이며 비워 두면 loopback만 사용합니다. loopback의 HTTPS 프록시와 내부 IP를 함께 쓸 수 있고 같은 토큰/동시성 검사를 공유합니다. 사설 HTTP는 PC에서만, 외부/모바일은 HTTPS를 사용합니다.
+
+## 선택형 빠른 전사·작업 캐시
+
+터보 구간 전사는 별도 모델이 필요 없습니다. 빠르게 모드는 서버에 `WHISPER_FAST_MODEL=small` 또는 준비한 한국어 지원 다국어 small 모델의 경로, `WHISPER_FAST_BEAM_SIZE=1`을 설정해야 나타납니다. 첫 요청의 모델 다운로드·로딩은 별도입니다. `.en` 영어 전용 모델은 사용하지 않습니다. Node와 Python이 같은 `.env`를 읽게 하고 두 서버를 다시 시작합니다. 정밀 모델·beam은 바꾸지 않습니다.
+
+작업은 동시1건이며 완료 결과·작업 ID를 서버 사용자의 `~/.local/state/meeting-notes-transcriptions`에 보관합니다. 별도 설치를 격리해야 하면 Python 실행 환경에 `STT_STATE_DIR`을 다른 전용 절대 경로로 지정합니다. 이 디렉터리는 원음/전사문을 포함할 수 있으므로 GitHub에 올리거나 일반 로그로 공유하지 않습니다. 정리·백업은 진행 중 작업이 없는 상태에서 담당자가 수행합니다.
+
+선택형 OpenAI 음성 API는 이번 로컬 터보 구간 전사·조회/취소 대상이 아닙니다. 실패 시 유료 API나 다른 모델로 자동 전환하지 않습니다.

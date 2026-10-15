@@ -102,3 +102,45 @@ test('LAN·HTTPS 공용 핸들러는 접속 토큰과 동시성 1을 함께 검�
  assert.equal((await invoke(listeners[1].server,'/summarize',post)).status,429);
  release();assert.equal((await first).status,200);
 });
+
+test('전사 작업 접수·조회·취소는 전부 인증하고 upstream 원문/경로를 필터',async()=>{
+ const job='a'.repeat(32);const calls=[];
+ const server=createServer({mode:'codex',codexModel:'test',token,sttProvider:'local',sttUrl:'http://127.0.0.1:8790'},{fetcher:async(url,options)=>{calls.push({url,options});return response({id:job,state:url.endsWith('/cancel')?'cancelled':'running',elapsedSeconds:9,percent:25,processedSeconds:25,totalSeconds:100,phase:'transcribing',private:'private-context'});}});
+ for(const [url,method] of [['/transcriptions','POST'],['/transcriptions/'+job,'GET'],['/transcriptions/'+job+'/cancel','POST']]){
+  assert.equal((await invoke(server,url,{method})).status,401);
+  const result=await invoke(server,url,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'audio/webm'},body:method==='POST'?'fixture':undefined});
+  assert.ok([200,202].includes(result.status));assert.equal(result.json.percent,25);assert.ok(!JSON.stringify(result).includes('private-context'));
+ }
+ assert.equal(calls.length,3);assert.equal(calls[0].url,'http://127.0.0.1:8790/jobs');
+ assert.equal(calls[2].url,'http://127.0.0.1:8790/jobs/'+job+'/cancel');
+});
+
+test('작업 429는 사용량 한도와 구분하며 자동 재접수하지 않음',async()=>{
+ let calls=0;
+ const server=createServer({mode:'codex',codexModel:'test',token,sttProvider:'local',sttUrl:'http://127.0.0.1:8790'},{fetcher:async()=>{calls++;return new Response('private error',{status:429});}});
+ const result=await invoke(server,'/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'audio/webm'},body:'fixture'});
+ assert.equal(result.status,429);assert.ok(result.json.error.includes('전사 취소'));assert.ok(!result.json.error.includes('private error'));assert.equal(calls,1);
+});
+
+test('빠른 전사 경로도 인증·OFF 차단을 지키고 지원 여부를 알림',async()=>{
+ let called=0;const config={mode:'codex',codexModel:'test',token,sttProvider:'local',sttUrl:'http://127.0.0.1:8790'};
+ const off=createServer(config,{fetcher:async()=>{called++;throw new Error('not allowed');}});
+ assert.equal((await invoke(off,'/health')).json.audioFast,false);
+ assert.equal((await invoke(off,'/transcriptions/fast',{method:'POST'})).status,401);
+ assert.equal((await invoke(off,'/transcriptions/fast',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'audio/wav'},body:'fixture'})).status,503);assert.equal(called,0);
+});
+test('빠른 전사는 같은 인증 프록시의 jobs/fast로만 보내고 무음·부분 결과를 보존',async()=>{
+ let target;const server=createServer({mode:'codex',codexModel:'test',token,sttProvider:'local',sttUrl:'http://127.0.0.1:8790',fastAudio:true},{fetcher:async url=>{target=url;return response({id:'f'.repeat(32),state:'completed',elapsedSeconds:1,profile:'fast',text:'',partialText:'앞서 확인한 부분',private:'private-fixture'});}});
+ assert.equal((await invoke(server,'/health')).json.audioFast,true);
+ const r=await invoke(server,'/transcriptions/fast',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'audio/wav'},body:'fixture'});
+ assert.equal(r.status,200);assert.equal(target,'http://127.0.0.1:8790/jobs/fast');assert.equal(r.json.text,'');assert.equal(r.json.partialText,'앞서 확인한 부분');assert.ok(!JSON.stringify(r).includes('private-fixture'));
+});
+
+test('터보 구간 전사는 인증·로컬 경계·프로필·무음 완료를 지키며 jobs/turbo만 사용',async()=>{
+ let calls=0;const config={mode:'codex',codexModel:'test',token,sttProvider:'local',sttUrl:'http://127.0.0.1:8790'};
+ const server=createServer(config,{fetcher:async url=>{calls++;assert.equal(url,'http://127.0.0.1:8790/jobs/turbo');return response({id:'e'.repeat(32),state:'completed',elapsedSeconds:1,profile:'turbo',text:''});}});
+ assert.equal((await invoke(server,'/health')).json.audioTurbo,true);
+ assert.equal((await invoke(server,'/transcriptions/turbo',{method:'POST'})).status,401);assert.equal(calls,0);
+ const result=await invoke(server,'/transcriptions/turbo',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'audio/wav'},body:'fixture'});assert.equal(result.status,200);assert.equal(result.json.profile,'turbo');assert.equal(result.json.text,'');assert.equal(calls,1);
+ const off=createServer({mode:'demo',token,sttProvider:'none'});assert.equal((await invoke(off,'/health')).json.audioTurbo,false);assert.equal((await invoke(off,'/transcriptions/turbo',{method:'POST',headers:{Authorization:'Bearer '+token}})).status,503);
+});

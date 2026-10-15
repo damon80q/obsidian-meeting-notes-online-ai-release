@@ -12,7 +12,7 @@ interface Settings {
 }
 
 // 처음에는 서버 없이 저장 흐름을 시험하는 데모입니다.
-// 127.0.0.1은 옵시디언 기기 자체입니다. 다른 서버를 쓰는 맥에서는 HTTPS로 바꿉니다.
+// 127.0.0.1은 옵시디언 기기 자체입니다. 다른 서버는 담당자가 제공한 주소를 사용합니다.
 const defaults:Settings={endpoint:'http://127.0.0.1:8789',token:'',folder:'회의록-온라인AI',autoSave:true,mode:'demo'};
 
 export default class MeetingPlugin extends Plugin {
@@ -76,11 +76,14 @@ class MeetingModal extends Modal {
   const endpoint=this.plugin.settings.endpoint.trim().replace(/\/+$/,'');
   let providerReady=mode==='demo';
   let audioReady=false;
+  let audioJobs=false;
+  let audioFast=false;
+  let audioTurbo=false;
   let automaticTitle=meetingTitle();
   el.addClass('meeting-notes');
   el.createEl('h2',{text:'회의를 노트로 · 온라인 AI'});
   el.createEl('p',{text:mode==='server'
-   ? '녹음 시작 → 녹음 종료·정리 → 회의록 저장. 제목과 회의 내용은 직접 입력하지 않아도 됩니다.'
+   ? '녹음 시작 → 녹음 중 전사 → 종료·정리 → 회의록 저장. 제목과 회의 내용은 직접 입력하지 않아도 됩니다.'
    : '데모에서는 텍스트로 저장 흐름을 시험합니다. 실제 녹음은 설정에서 정리 서버를 연결하세요.'});
   const titleInfo=el.createEl('p',{text:'자동 제목: '+automaticTitle});
   const disclosure=el.createEl('p');
@@ -215,7 +218,7 @@ class MeetingModal extends Modal {
    consent.hide();
   }else{
    this.recording=new RecordingControls(this.app,audioEl!,{
-    endpoint,token:this.plugin.settings.token,
+    endpoint,token:this.plugin.settings.token,jobs:()=>audioJobs,fast:()=>audioFast,turbo:()=>audioTurbo,
     allowed:()=>providerReady&&audioReady&&checkbox.checked&&!this.busy,
     onStart:refreshTitle,
     progressEl:progress.element,onProgress:message=>{if(!this.closed){progress.show(message);generate.disabled=true;save.disabled=true;}},onIdle:()=>{progress.hide();if(!this.closed)generate.disabled=false;},
@@ -237,6 +240,7 @@ class MeetingModal extends Modal {
      if(this.closed)return;
      providerReady=true;
      audioReady=h.audio===true;
+     audioJobs=h.audioJobs===true;audioFast=h.audioFast===true;audioTurbo=h.audioTurbo===true;this.recording?.refreshCapabilities();
      if(!audioReady)manual.open=true;
      disclosure.setText('전송 대상: '+endpoint+' → 음성: '+h.audioProvider+' · 텍스트: '+h.provider
       +' ('+(h.mode==='demo'?'서버 데모 · AI 아님':'온라인 AI 처리')+')'

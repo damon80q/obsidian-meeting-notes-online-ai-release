@@ -34,3 +34,6 @@ data.json
 secrets/
 .openclaw/
 docs/*SMOKE*.json
+
+# 소유자 전용 전사 작업·결과 캐시는 공개하지 않습니다.
+.transcription-jobs/

@@ -2,10 +2,13 @@
 import importlib.util
 import json
 import threading
+import sys
 import unittest
 import http.client
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server"))
 
 spec = importlib.util.spec_from_file_location("meeting_transcribe", Path(__file__).resolve().parents[1] / "server/transcribe.py")
 module = importlib.util.module_from_spec(spec)
